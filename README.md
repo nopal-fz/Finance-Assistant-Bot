@@ -14,6 +14,30 @@ Bot Telegram personal finance tracker. Catat pemasukan/pengeluaran via chat bias
 - **Dashboard** — Grafik interaktif FastAPI + Chart.js, dark mode toggle, Inter font, responsive.
 - **MCP Server** — Tools `get_transactions`, `get_summary`, `get_budget_status` untuk AI agent.
 
+## Kategori Transaksi
+
+Bot auto-detect kategori dari chat. Berikut daftar kategori default:
+
+### Pengeluaran (Expense)
+| Kategori | Contoh Chat |
+|----------|------------|
+| Makan | `makan siang 45rb`, `kopi 20rb`, `go-food 50rb` |
+| Transport | `bensin 100rb`, `ojol 15rb`, `tol 25rb` |
+| Tagihan | `token listrik 200rb`, `pulsa 50rb`, `wifi 150rb` |
+| Hiburan | `nonton 50rb`, `netflix 120rb`, `game 30rb` |
+| Belanja | `beli baju 200rb`, `shopee 75rb`, `indomaret 45rb` |
+| Kesehatan | `obat 30rb`, `dokter 200rb` |
+| Pendidikan | `buku 100rb`, `kursus 500rb` |
+| Lainnya | (default jika tidak cocok) |
+
+### Pemasukan (Income)
+| Kategori | Contoh Chat |
+|----------|------------|
+| Gaji | `gajian 5jt`, `bonus 2jt` |
+| Lainnya | `jual 200rb`, `dapet 50rb` |
+
+Kustomisasi: `/kategori tambah [nama]` atau `/kategori hapus [nama]`.
+
 ## Persyaratan
 
 - Python 3.11+
