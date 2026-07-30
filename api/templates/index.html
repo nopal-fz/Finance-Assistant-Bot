@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Dashboard Kas Pribadi</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        :root {
+            --bg: #f1f5f9;
+            --surface: #ffffff;
+            --text: #0f172a;
+            --text-secondary: #64748b;
+            --border: #e2e8f0;
+            --income: #10b981;
+            --expense: #ef4444;
+            --shadow: 0 1px 3px rgba(0,0,0,0.04), 0 1px 2px rgba(0,0,0,0.06);
+            --shadow-hover: 0 8px 24px rgba(0,0,0,0.08);
+        }
+        .dark {
+            --bg: #0f172a;
+            --surface: #1e293b;
+            --text: #f1f5f9;
+            --text-secondary: #94a3b8;
+            --border: #334155;
+            --shadow: 0 1px 3px rgba(0,0,0,0.2), 0 1px 2px rgba(0,0,0,0.3);
+            --shadow-hover: 0 8px 24px rgba(0,0,0,0.4);
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', -apple-system, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            padding: 2rem;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            transition: background 0.3s, color 0.3s;
+        }
+        .container {
+            max-width: 1200px;
+            width: 100%;
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.25rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+        .header-left h1 {
+            font-size: 1.75rem;
+            font-weight: 800;
+            color: var(--text);
+            letter-spacing: -0.02em;
+        }
+        .header-left .subtitle {
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+            font-weight: 400;
+            margin-top: 0.125rem;
+        }
+        .theme-toggle {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 0.5rem 1rem;
+            cursor: pointer;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: var(--text);
+            transition: background 0.2s, border-color 0.2s;
+        }
+        .theme-toggle:hover {
+            border-color: var(--text-secondary);
+        }
+        .summary-stats {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            margin: 1.5rem 0 1.5rem;
+        }
+        .stat-card {
+            flex: 1;
+            min-width: 140px;
+            background: var(--surface);
+            border-radius: 16px;
+            padding: 1.25rem 1.5rem;
+            box-shadow: var(--shadow);
+            transition: box-shadow 0.2s, background 0.3s;
+            border: 1px solid var(--border);
+        }
+        .stat-card:hover {
+            box-shadow: var(--shadow-hover);
+        }
+        .stat-label {
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-top: 0.25rem;
+            letter-spacing: -0.02em;
+        }
+        .stat-value.income { color: var(--income); }
+        .stat-value.expense { color: var(--expense); }
+        .stat-value.net { color: var(--text); }
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+            gap: 1.5rem;
+        }
+        .card {
+            background: var(--surface);
+            border-radius: 16px;
+            padding: 1.5rem;
+            box-shadow: var(--shadow);
+            transition: box-shadow 0.2s, background 0.3s;
+            border: 1px solid var(--border);
+        }
+        .card:hover { box-shadow: var(--shadow-hover); }
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+        .card h3 {
+            font-size: 0.875rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-secondary);
+        }
+        .card-badge {
+            font-size: 0.7rem;
+            font-weight: 500;
+            color: var(--text-secondary);
+            background: var(--bg);
+            padding: 0.2rem 0.6rem;
+            border-radius: 6px;
+        }
+        canvas { max-height: 280px; width: 100% !important; }
+        .latest-list {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 0.375rem;
+        }
+        .latest-list li {
+            padding: 0.5rem 0;
+            border-bottom: 1px solid var(--border);
+            font-size: 0.875rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .latest-list li:last-child { border-bottom: none; }
+        .tx-cat {
+            font-weight: 500;
+            background: var(--bg);
+            padding: 0.125rem 0.5rem;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            color: var(--text);
+        }
+        .tx-amount { font-weight: 600; }
+        .tx-date { color: var(--text-secondary); font-size: 0.75rem; margin-left: 0.5rem; }
+        .empty-state {
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+            text-align: center;
+            padding: 2rem 0;
+        }
+        @media (max-width: 640px) {
+            body { padding: 1rem; }
+            .grid { grid-template-columns: 1fr; }
+            .summary-stats { gap: 0.75rem; }
+            .stat-card { min-width: 100px; padding: 1rem; }
+            .stat-value { font-size: 1.125rem; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="header-left">
+                <h1>Dashboard Keuangan</h1>
+                <p class="subtitle">Ringkasan pemasukan & pengeluaran <span id="periodLabel">bulan ini</span></p>
+            </div>
+            <button class="theme-toggle" onclick="toggleTheme()" id="themeBtn">&#9790; Dark Mode</button>
+        </div>
+        <div class="summary-stats" id="statsBar">
+            <div class="stat-card"><div class="stat-label">Pemasukan</div><div class="stat-value income" id="incomeVal">-</div></div>
+            <div class="stat-card"><div class="stat-label">Pengeluaran</div><div class="stat-value expense" id="expenseVal">-</div></div>
+            <div class="stat-card"><div class="stat-label">Selisih</div><div class="stat-value net" id="netVal">-</div></div>
+        </div>
+        <div class="grid">
+            <div class="card">
+                <div class="card-header"><h3>Pemasukan vs Pengeluaran</h3><span class="card-badge">Bulan Ini</span></div>
+                <canvas id="summaryChart"></canvas>
+            </div>
+            <div class="card">
+                <div class="card-header"><h3>Kategori Pengeluaran</h3><span class="card-badge">Bulan Ini</span></div>
+                <canvas id="pieChart"></canvas>
+            </div>
+            <div class="card">
+                <div class="card-header"><h3>Transaksi Terbaru</h3><span class="card-badge">Minggu Ini</span></div>
+                <ul class="latest-list" id="latestTxs"></ul>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function toggleTheme() {
+            const html = document.documentElement;
+            const btn = document.getElementById('themeBtn');
+            html.classList.toggle('dark');
+            const isDark = html.classList.contains('dark');
+            btn.innerHTML = isDark ? '\u2600 Light Mode' : '\u2612 Dark Mode';
+            localStorage.setItem('theme', isDark ? 'dark' : 'light');
+        }
+        if (localStorage.getItem('theme') === 'dark') { document.documentElement.classList.add('dark');
+            document.getElementById('themeBtn').innerHTML = '\u2600 Light Mode'; }
+
+        async function fetchData(endpoint) {
+            const res = await fetch(endpoint);
+            if (!res.ok) throw new Error(await res.text());
+            return res.json();
+        }
+
+        function formatRupiah(n) {
+            return 'Rp ' + Number(n).toLocaleString('id-ID');
+        }
+
+        async function loadSummary() {
+            const data = await fetchData('/api/summary?periode=bulan ini');
+            document.getElementById('incomeVal').textContent = formatRupiah(data.total_income);
+            document.getElementById('expenseVal').textContent = formatRupiah(data.total_expense);
+            document.getElementById('netVal').textContent = formatRupiah(data.total_income - data.total_expense);
+            new Chart(document.getElementById('summaryChart'), {
+                type: 'bar',
+                data: {
+                    labels: ['Pemasukan', 'Pengeluaran'],
+                    datasets: [{ label: 'Rupiah', data: [data.total_income, data.total_expense], backgroundColor: ['#10b981', '#ef4444'], borderRadius: 8 }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: { beginAtZero: true, grid: { color: 'rgba(148,163,184,0.15)' }, ticks: { font: { family: 'Inter' } } },
+                        x: { grid: { display: false }, ticks: { font: { family: 'Inter' } } }
+                    }
+                }
+            });
+        }
+
+        async function loadPie() {
+            const data = await fetchData('/api/summary?periode=bulan ini');
+            const labels = Object.keys(data.by_category);
+            const values = Object.values(data.by_category);
+            if (labels.length === 0) { document.getElementById('pieChart').parentElement.innerHTML += '<div class="empty-state">Belum ada data pengeluaran.</div>'; return; }
+            new Chart(document.getElementById('pieChart'), {
+                type: 'doughnut',
+                data: {
+                    labels,
+                    datasets: [{ data: values, backgroundColor: ['#f59e0b','#3b82f6','#10b981','#8b5cf6','#ef4444','#ec4899','#14b8a6','#f97316','#6366f1','#84cc16'] }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: { position: 'bottom', labels: { font: { family: 'Inter', size: 11 }, padding: 16, usePointStyle: true } }
+                    }
+                }
+            });
+        }
+
+        async function loadTxs() {
+            const list = document.getElementById('latestTxs');
+            const data = await fetchData('/api/transactions?periode=minggu ini');
+            if (data.length === 0) { list.innerHTML = '<li class="empty-state">Belum ada transaksi minggu ini.</li>'; return; }
+            data.slice(0, 10).forEach(tx => {
+                const li = document.createElement('li');
+                const date = new Date(tx.waktu).toLocaleDateString('id-ID', { weekday: 'short', day: 'numeric' });
+                li.innerHTML = `<span><span class="tx-cat">${tx.kategori}</span><span class="tx-date">${date}</span></span><span class="tx-amount">${formatRupiah(tx.nominal)}</span>`;
+                list.appendChild(li);
+            });
+        }
+
+        window.onload = () => { loadSummary(); loadPie(); loadTxs(); };
+    </script>
+</body>
+</html>
