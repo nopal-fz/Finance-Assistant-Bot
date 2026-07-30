@@ -24,10 +24,11 @@
 - [x] Implementasi API Endpoint / Bot Handler (natural language chat + konfirmasi simpan).
 - [x] Implementasi MCP Server (tools: `get_transactions`, `get_summary`, `get_budget_status`).
 - [x] Implementasi scheduler untuk laporan otomatis mingguan & reminder budget (saat save).
-- [x] Implementasi dashboard frontend sederhana (FastAPI + Chart.js).
+- [x] Implementasi dashboard frontend sederhana (FastAPI + Chart.js, layout asimetris).
+- [x] Implementasi LLM untuk sapaan ramah (Groq Llama-3.3-70b).
 - [x] Testing & Validation (unit test service layer & manual bot testing).
 
 ## 🚀 Last Session Notes
-- *Status:* MVP feature-complete sesuai PRD. Bot commands: `/start`, `/help`, `/laporan`, `/budget`, `/catat`, `/hapus`, `/batal`, `/kategori`. Category override via chat. Scheduler: laporan mingguan (Senin 09:00), laporan bulanan (tgl 1 09:00), reminder budget (Senin 10:00). Dashboard FastAPI + Chart.js + dark mode + auth middleware + layout grid 2:1:1 asimetris. MCP server 3 tools. Git init & push ke GitHub. Semua akses data via services layer. Pydantic schemas selesai. Error handler bot aktif. Auth middleware terpasang di semua endpoint API + dashboard. `load_dotenv()` pake absolute path biar aman dari CWD issue. `.env.example` tersedia. README lengkap dengan tabel kategori, cara override, budget threshold, dan deployment guide.
+- *Status:* MVP feature-complete sesuai PRD + LLM sapaan ramah. Bot commands: `/start`, `/help`, `/laporan`, `/budget`, `/catat`, `/hapus`, `/batal`, `/kategori`. Category override via chat. Scheduler: laporan mingguan (Senin 09:00), laporan bulanan (tgl 1 09:00), reminder budget (Senin 10:00). Dashboard FastAPI + Chart.js + dark mode + auth middleware + layout grid 2:1:1 asimetris. MCP server 3 tools. Git init & push ke GitHub. Semua akses data via services layer. Pydantic schemas selesai. Error handler bot aktif. Auth middleware terpasang di semua endpoint API + dashboard. `load_dotenv()` pake absolute path biar aman dari CWD issue. `.env.example` tersedia. README lengkap dengan tabel kategori, cara override, budget threshold, dan deployment guide. Fungsi `main()` bot direfactor agar bisa di-import.
 - *Repo:* `https://github.com/nopal-fz/Finance-Assistant-Bot`
-- *What's Next:* Tergantung kebutuhan — bisa deploy production (Railway/Fly.io/VPS), tambah fitur baru (export CSV, recurring transactions, search), improve NLP, atau testing proper.
+- *What's Next:* Prioritas bisa ke deploy production (Railway/Fly.io/VPS), tambah fitur baru (export CSV, recurring transactions, search), improve NLP lebih lanjut (deteksi pola utang/piutang/transfer sudah ditambah), atau testing lebih proper.

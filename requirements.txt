@@ -9,3 +9,4 @@ apscheduler>=3.10
 python-dotenv>=1.0
 plotly>=5.18.0
 aiofiles>=23.0
+groq>=0.12.0

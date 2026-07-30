@@ -6,6 +6,7 @@ from telegram.ext import ApplicationBuilder, ContextTypes, CommandHandler, Messa
 from dotenv import load_dotenv
 
 from services.nlp_parser import parse_transaction
+from services.llm_service import get_friendly_response
 from services.transaction import create_transaction, get_summary, delete_transaction, get_last_transaction
 from services.budget import set_budget, get_budget_usage
 from services.category import list_categories, add_category, delete_category
@@ -190,8 +191,14 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     parsed = parse_transaction(text)
     
     if not parsed:
-        await update.message.reply_text("Maaf, aku ga paham. Coba 'makan 45rb' atau 'gajian 5jt'.")
-        return
+        # If no transaction detected, try LLM for friendly response
+        llm_response = await get_friendly_response(text)
+        if llm_response:
+            await update.message.reply_text(llm_response)
+            return
+        else:
+            await update.message.reply_text("Maaf, aku ga paham. Coba 'makan 45rb' atau 'gajian 5jt'.")
+            return
 
     # Store in context for confirmation
     context.user_data['last_parsed'] = parsed
@@ -370,11 +377,10 @@ async def error_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if update and update.effective_message:
         await update.effective_message.reply_text("Maaf, ada kesalahan teknis. Coba lagi ya.")
 
-if __name__ == '__main__':
-    import asyncio
-    import signal
-    
-    async def main():
+import asyncio
+import signal
+
+async def main():
         token = os.getenv("BOT_TOKEN")
         if not token or token == "your_telegram_bot_token_here":
             print("Error: BOT_TOKEN belum diisi di .env")
@@ -411,4 +417,5 @@ if __name__ == '__main__':
             await app.stop()
             await app.shutdown()
 
+if __name__ == '__main__':
     asyncio.run(main())

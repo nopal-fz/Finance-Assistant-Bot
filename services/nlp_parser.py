@@ -18,18 +18,18 @@ CATEGORY_KEYWORDS = {
     "Kesehatan": ["obat", "dokter", "sehat", "apotek", "vitamin", "sakit"],
     "Pendidikan": ["buku", "kursus", "belajar", "kampus", "sekolah", "udemy"],
     "Gaji": ["gaji", "gajian", "bonus", "insentif", "payroll"],
+    "Hutang": ["bayar utang", "bayar hutang", "lunasi utang", "cicilan"], # expense
+    "Piutang": ["pinjamkan", "pinjemin", "kasih pinjam", "ngutangin"], # expense
+    "Transfer": ["transfer ke", "transfer uang"], # expense
 }
 
-INCOME_KEYWORDS = ["gaji", "gajian", "bonus", "jual", "dapet", "terima", "pemasukan", "income", "pendapatan", "transfer balik"]
+INCOME_KEYWORDS = ["gaji", "gajian", "bonus", "jual", "dapet", "terima", "pemasukan", "income", "pendapatan", "transfer balik", "balikin utang", "dibayar utang", "balikin pinjeman"]
 
 def parse_transaction(text: str) -> Optional[ParsedTransaction]:
     text = text.lower()
     
     # 1. Extract Nominal
-    # regex for 45rb, 5jt, 100k, 100.000, 100000
     nominal = 0
-    
-    # Handle 'rb', 'k', 'jt'
     match_rb = re.search(r'(\d+)\s*(rb|k)', text)
     match_jt = re.search(r'(\d+)\s*jt', text)
     match_raw = re.search(r'(\d+[\d\.]*)', text)
@@ -72,6 +72,11 @@ def parse_transaction(text: str) -> Optional[ParsedTransaction]:
     if kategori == "Gaji":
         jenis = "income"
         confidence = max(confidence, 0.9)
+    
+    # Special handling for Piutang income
+    if kategori == "Piutang" and ("balikin utang" in text or "dibayar utang" in text or "balikin pinjeman" in text):
+        jenis = "income"
+        confidence = max(confidence, 0.9)
 
     return ParsedTransaction(
         nominal=nominal,
@@ -82,7 +87,16 @@ def parse_transaction(text: str) -> Optional[ParsedTransaction]:
     )
 
 if __name__ == "__main__":
-    # Quick test
-    test_cases = ["abis makan 45rb", "gajian 5jt", "beli token listrik 100rb", "grab 20k", "nemu duit 5000"]
+    test_cases = [
+        "abis makan 45rb", 
+        "gajian 5jt", 
+        "beli token listrik 100rb", 
+        "grab 20k", 
+        "nemu duit 5000",
+        "bayar utang 50rb",
+        "pinjemin andi 100k",
+        "si A balikin utang 100k",
+        "transfer ke ortu 200rb"
+    ]
     for tc in test_cases:
         print(f"'{tc}' -> {parse_transaction(tc)}")

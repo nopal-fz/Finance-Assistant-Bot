@@ -1,5 +1,5 @@
 from fastapi import FastAPI, Request, Depends, HTTPException
-from fastapi.responses import HTMLResponse
+from fastapi.responses import HTMLResponse, Response
 from models import AsyncSessionLocal, Transaction, TransactionType
 from models.base import AsyncSession
 from sqlalchemy import select, func
@@ -122,3 +122,7 @@ async def get_dashboard(request: Request, _auth: str = Depends(get_password_head
 async def budget_status(request: Request, db: AsyncSession = Depends(get_db_session), _auth: str = Depends(get_password_header)):
     res = await get_budget_usage(db)
     return res
+
+@app.get("/favicon.ico")
+async def favicon():
+    return Response(status_code=204)
