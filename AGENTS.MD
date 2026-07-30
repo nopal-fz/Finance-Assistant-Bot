@@ -28,6 +28,6 @@
 - [x] Testing & Validation (unit test service layer & manual bot testing).
 
 ## 🚀 Last Session Notes
-- *Status:* Semua fitur PRD + perbaikan teknis selesai. Bot commands: `/start`, `/help`, `/laporan`, `/budget`, `/catat`, `/hapus`, `/batal`, `/kategori`. Category override via chat. Scheduler: laporan mingguan (Senin 09:00), laporan bulanan (tgl 1 09:00), reminder budget (Senin 10:00). Dashboard FastAPI + Chart.js + dark mode + auth middleware. MCP server 3 tools. Git init & push ke GitHub. Semua akses data via services layer. Pydantic schemas selesai. Error handler bot aktif.
+- *Status:* MVP feature-complete sesuai PRD. Bot commands: `/start`, `/help`, `/laporan`, `/budget`, `/catat`, `/hapus`, `/batal`, `/kategori`. Category override via chat. Scheduler: laporan mingguan (Senin 09:00), laporan bulanan (tgl 1 09:00), reminder budget (Senin 10:00). Dashboard FastAPI + Chart.js + dark mode + auth middleware + layout grid 2:1:1 asimetris. MCP server 3 tools. Git init & push ke GitHub. Semua akses data via services layer. Pydantic schemas selesai. Error handler bot aktif. Auth middleware terpasang di semua endpoint API + dashboard. `load_dotenv()` pake absolute path biar aman dari CWD issue. `.env.example` tersedia. README lengkap dengan tabel kategori, cara override, budget threshold, dan deployment guide.
 - *Repo:* `https://github.com/nopal-fz/Finance-Assistant-Bot`
-- *What's Next:* Tergantung kebutuhan — bisa tambah fitur baru, testing, deploy production, atau improvement NLP/dashboard.
+- *What's Next:* Tergantung kebutuhan — bisa deploy production (Railway/Fly.io/VPS), tambah fitur baru (export CSV, recurring transactions, search), improve NLP, atau testing proper.
