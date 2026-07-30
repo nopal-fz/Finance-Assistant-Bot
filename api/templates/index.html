@@ -219,6 +219,8 @@
     </div>
 
     <script>
+        const TOKEN = new URLSearchParams(window.location.search).get('token') || '';
+
         function toggleTheme() {
             const html = document.documentElement;
             const btn = document.getElementById('themeBtn');
@@ -231,7 +233,8 @@
             document.getElementById('themeBtn').innerHTML = '\u2600 Light Mode'; }
 
         async function fetchData(endpoint) {
-            const res = await fetch(endpoint);
+            const sep = endpoint.includes('?') ? '&' : '?';
+            const res = await fetch(endpoint + sep + 'token=' + TOKEN);
             if (!res.ok) throw new Error(await res.text());
             return res.json();
         }

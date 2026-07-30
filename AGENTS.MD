@@ -28,19 +28,6 @@
 - [x] Testing & Validation (unit test service layer & manual bot testing).
 
 ## 🚀 Last Session Notes
-- *Status:* Core flow (Input chat -> NLP Parser -> SQLite -> MCP), bot commands (`/laporan`, `/budget`, `/catat`, `/help`, `/hapus`, `/batal`), scheduler (laporan mingguan + budget alert saat save), Undo inline button, dashboard FastAPI + Chart.js, dan MCP server sudah selesai. Bot jalan via `python -m bot.main`, dashboard via `uvicorn api.main:app --reload`.
-- *Remaining:* 
-  1. **Category management** — `/kategori` command + CRUD kategori via bot.
-  2. **Category override flow** — koreksi kategori pas konfirmasi tanpa cancel.
-  3. **Monthly report scheduler** — cron awal bulan.
-  4. **Periodic budget reminder** — scheduler mingguan cek budget >80%.
-  5. **Historical comparison** — laporan banding periode sebelumnya.
-  6. **Dashboard beautify** — redesign rapi, font Inter, responsive.
-  7. **Pydantic schemas** — isi `schemas/` layer.
-  8. **Refactor direct SQL** — pindah query dari `hapus`/`batal` ke `services/`.
-  9. **`/api/budget` endpoint** — buat dashboard.
-  10. **Bot error handler** — register `error_handler()`.
-  11. **Clean stale files** — hapus `dashboard.html`, `static/app.js`, `static/style.css`.
-  12. **Fix auth middleware** — pasang `Depends(get_password_header)`.
-  13. **GitHub setup** — untrack `.env`, push repo.
-  14. **Deployment guide** — verify & update README.
+- *Status:* Semua fitur PRD + perbaikan teknis selesai. Bot commands: `/start`, `/help`, `/laporan`, `/budget`, `/catat`, `/hapus`, `/batal`, `/kategori`. Category override via chat. Scheduler: laporan mingguan (Senin 09:00), laporan bulanan (tgl 1 09:00), reminder budget (Senin 10:00). Dashboard FastAPI + Chart.js + dark mode + auth middleware. MCP server 3 tools. Git init & push ke GitHub. Semua akses data via services layer. Pydantic schemas selesai. Error handler bot aktif.
+- *Repo:* `https://github.com/nopal-fz/Finance-Assistant-Bot`
+- *What's Next:* Tergantung kebutuhan — bisa tambah fitur baru, testing, deploy production, atau improvement NLP/dashboard.

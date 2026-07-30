@@ -3,9 +3,10 @@ from sqlalchemy.orm import DeclarativeBase
 import os
 from dotenv import load_dotenv
 
-load_dotenv()
+_project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+load_dotenv(os.path.join(_project_root, ".env"))
 
-DATABASE_URL = os.getenv("DATABASE_URL", "sqlite+aiosqlite:///C:/Bot Expenses/bot_kemas.db")
+DATABASE_URL = os.getenv("DATABASE_URL", f"sqlite+aiosqlite:///{os.path.join(_project_root, 'bot_kemas.db')}")
 
 engine = create_async_engine(DATABASE_URL, echo=False)
 AsyncSessionLocal = async_sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)

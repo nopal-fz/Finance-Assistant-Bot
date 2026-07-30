@@ -9,7 +9,8 @@ import os
 from services.budget import get_budget_usage
 
 from dotenv import load_dotenv
-load_dotenv()
+_project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+load_dotenv(os.path.join(_project_root, ".env"))
 
 app = FastAPI()
 
@@ -18,11 +19,14 @@ async def get_db_session():
         yield session
 
 def get_password_header(request: Request):
+    password = os.getenv("DASHBOARD_PASSWORD")
+    if not password:
+        return None
     token = request.headers.get("Authorization") or request.query_params.get("token")
     if token and token.startswith("Bearer "):
         token = token[7:]
-    if token != os.getenv("DASHBOARD_PASSWORD"):
-        raise HTTPException(status_code=401, detail="Unauthorized")
+    if token != password:
+        raise HTTPException(status_code=401, detail="Unauthorized. Pass ?token=xxx or Authorization header.")
     return token
 
 @app.get("/api/transactions")
@@ -110,7 +114,7 @@ async def get_summary(request: Request, db: AsyncSession = Depends(get_db_sessio
 @app.get("/")
 async def get_dashboard(request: Request, _auth: str = Depends(get_password_header)):
     import aiofiles
-    async with aiofiles.open("api/templates/index.html", encoding="utf-8") as f:
+    async with aiofiles.open(os.path.join(_project_root, "api", "templates", "index.html"), encoding="utf-8") as f:
         html = await f.read()
     return HTMLResponse(html)
 

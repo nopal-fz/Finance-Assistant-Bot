@@ -5,12 +5,13 @@ Bot Telegram personal finance tracker. Catat pemasukan/pengeluaran via chat bias
 ## Fitur
 
 - **Natural Language Chat** — `makan 45rb`, `gajian 5jt`, bot auto-detect nominal, kategori, jenis.
-- **Kategorisasi Otomatis** — Makan, Transport, Tagihan, dll. Koreksi via chat.
-- **Laporan** — `/laporan` ringkasan harian/mingguan/bulanan.
-- **Budget** — `/budget Makan 2000000` atur limit bulanan, bot kirim peringatan.
+- **Kategorisasi Otomatis** — Makan, Transport, Tagihan, dll. Koreksi via chat (ketik nama kategori pas konfirmasi).
+- **Laporan** — `/laporan` ringkasan harian/mingguan/bulanan + perbandingan dengan periode sebelumnya.
+- **Budget** — `/budget Makan 2000000` atur limit bulanan, bot kirim peringatan (pas simpan + reminder mingguan).
+- **Kelola Kategori** — `/kategori` lihat/tambah/hapus kategori custom.
 - **Hapus** — `/hapus {id}` atau `/batal` (hapus transaksi terakhir) + tombol Undo.
-- **Scheduler** — Laporan mingguan otomatis tiap Senin jam 9 pagi.
-- **Dashboard** — Grafik interaktif via FastAPI + Chart.js (Inter font, minimal).
+- **Scheduler** — Laporan mingguan (Senin 09:00), laporan bulanan (tgl 1), reminder budget (Senin 10:00).
+- **Dashboard** — Grafik interaktif FastAPI + Chart.js, dark mode toggle, Inter font, responsive.
 - **MCP Server** — Tools `get_transactions`, `get_summary`, `get_budget_status` untuk AI agent.
 
 ## Persyaratan
@@ -78,6 +79,7 @@ Bot akan konfirmasi dulu sebelum simpan.
 | `/budget` | `/budget Makan 2000000` | Set limit bulanan |
 | `/hapus` | `/hapus 3` | Hapus transaksi by ID |
 | `/batal` | — | Hapus transaksi terakhir |
+| `/kategori` | `/kategori` atau `/kategori tambah Makanan` | Lihat/tambah/hapus kategori |
 | `/help` | — | Panduan lengkap |
 
 ## Struktur Proyek
@@ -97,6 +99,7 @@ Dashboard menampilkan:
 - Grafik batang pemasukan vs pengeluaran
 - Pie chart distribusi kategori
 - Daftar transaksi terbaru
+- Dark mode (toggle tombol di pojok kanan atas)
 
 Akses: `http://127.0.0.1:8000/?token=your_password`
 
