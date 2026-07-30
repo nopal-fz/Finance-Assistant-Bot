@@ -42,13 +42,13 @@ Kustomisasi: `/kategori tambah [nama]` atau `/kategori hapus [nama]`.
 
 - Python 3.11+
 - Bot Telegram ([buat via @BotFather](https://t.me/BotFather))
-- Pipenv / pip
+- Pip / venv
 
 ## Instalasi & Setup
 
 ```bash
 # Clone
-git clone <repo-url> bot-kas-pribadi
+git clone https://github.com/nopal-fz/Finance-Assistant-Bot.git bot-kas-pribadi
 cd bot-kas-pribadi
 
 # Virtual environment
@@ -59,24 +59,28 @@ source .venv/bin/activate  # Linux/Mac
 # Install dependencies
 pip install -r requirements.txt
 
-# Setup .env
-cp .env .env.backup  # backup default
+# Buat .env dari template
+cp .env.example .env
 ```
 
 Edit `.env`:
 ```
 BOT_TOKEN=isi_token_dari_botfather
 DASHBOARD_PASSWORD=ganti_password_aman
-TELEGRAM_USER_CHAT_ID=          # (opsional) isi setelah bot jalan sekali
+TELEGRAM_USER_CHAT_ID=          # (opsional, isi setelah bot jalan sekali)
 ```
 
+Database SQLite (`bot_kemas.db`) auto-created saat pertama kali bot/dashboard jalan. Backup cukup kopi file ini.
+
 ## Cara Jalankan
+
+Butuh **2 terminal** terpisah — satu buat bot, satu buat dashboard.
 
 ### Terminal 1: Bot Telegram
 ```bash
 python -m bot.main
 ```
-Bot siap di-chat di Telegram.
+Bot siap di-chat di Telegram. Database `bot_kemas.db` auto-created.
 
 ### Terminal 2: Dashboard (opsional)
 ```bash
@@ -94,6 +98,16 @@ beli token listrik 100rb
 ```
 Bot akan konfirmasi dulu sebelum simpan.
 
+**Koreksi kategori (override):** kalau kategori salah tebak, tinggal ketik nama kategori yang bener pas muncul tombol Simpan — bot akan update tanpa perlu cancel & ulang.
+```
+User: grab 20k
+Bot: Dicatat Rp 20.000 - Transport. Simpan? [Ya] [Salah]
+User: Makan              ← override kategori
+Bot: Kategori diubah ke Makan. Simpan? [Ya] [Salah]
+```
+
+**Undo:** setelah klik Simpan, ada tombol "↩️ Undo" untuk hapus transaksi terakhir yang baru disimpan.
+
 **Perintah:**
 | Perintah | Contoh | Fungsi |
 |----------|--------|--------|
@@ -105,6 +119,8 @@ Bot akan konfirmasi dulu sebelum simpan.
 | `/batal` | — | Hapus transaksi terakhir |
 | `/kategori` | `/kategori` atau `/kategori tambah Makanan` | Lihat/tambah/hapus kategori |
 | `/help` | — | Panduan lengkap |
+
+**Budget alert:** otomatis dikirim saat simpan transaksi kalau pengeluaran kategori sudah ≥80% limit. ≥100% dapat alert merah (`⚠️ Melebihi limit`). Juga ada reminder setiap Senin jam 10:00 via scheduler.
 
 ## Struktur Proyek
 
