@@ -165,13 +165,35 @@ Integrasi AI agent via FastMCP:
 ## Deployment
 
 ### Railway (Recommended)
-```bash
-npm i -g @railway/cli
-railway login
-railway init
-railway up
+
+Repo ini punya 3 service lewat `Procfile`: `web` (dashboard FastAPI), `worker` (bot Telegram), `mcp` (FastMCP via SSE).
+
+1. **Deploy:** Railway → New Project → Deploy from GitHub → pilih repo.
+2. **Database:** klik **New** → **PostgreSQL**. Jangan set `DATABASE_URL` manual — Railway auto-inject.
+3. **Environment Variables:** set di shared variables:
+   ```
+   BOT_TOKEN=isi_token_dari_botfather
+   DASHBOARD_PASSWORD=ganti_password_aman
+   GROQ_API_KEY=isi_api_key_groq
+   TELEGRAM_USER_CHAT_ID=isi_chat_id
+   TZ=Asia/Jakarta
+   ```
+4. **⚠️ Link PostgreSQL ke SEMUA service** (`web`, `worker`, `mcp`): tiap service → Variables → New Variable → **Add Reference** → pilih `DATABASE_URL`. Tanpa ini service fallback ke SQLite kosong → error `no such table: transactions`.
+5. **Dashboard:** service `web` → Settings → Networking → Generate Domain → buka `https://<domain>/?token=<DASHBOARD_PASSWORD>`.
+6. **MCP:** service `mcp` → Settings → Networking → Generate Domain → akses via `https://<domain>/sse`.
+
+**Connect MCP dari Cursor/Claude:**
+```json
+{
+  "mcpServers": {
+    "bot-kas-pribadi": {
+      "type": "sse",
+      "url": "https://<domain-mcp>.up.railway.app/sse"
+    }
+  }
+}
 ```
-Set env di dashboard Railway: `BOT_TOKEN`, `DASHBOARD_PASSWORD`, `GROQ_API_KEY`, `DATABASE_URL=sqlite+aiosqlite:///bot_kemas.db`.
+Wajib sertakan path `/sse` (root `/` ga dipakai FastMCP).
 
 ### Fly.io
 ```bash

@@ -1,9 +1,9 @@
 {
   "mcpServers": {
     "bot-kas-pribadi": {
-      "command": "C:\\Bot Expenses\\.venv\\Scripts\\python.exe",
-      "args": ["C:\\Bot Expenses\\mcp\\server.py"],
-      "cwd": "C:/Bot Expenses"
+      "command": "python",
+      "args": ["mcp/server.py"],
+      "cwd": "."
     }
   }
 }
