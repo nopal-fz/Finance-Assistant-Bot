@@ -1,6 +1,11 @@
-import sys
+import os
+import asyncio
 from pathlib import Path
-sys.path.append(str(Path(__file__).parent.parent))
+
+_project_root = Path(__file__).parent.parent
+import sys
+if str(_project_root) not in sys.path:
+    sys.path.append(str(_project_root))
 
 from fastmcp import FastMCP
 from models import AsyncSessionLocal, Transaction
@@ -71,5 +76,15 @@ async def get_budget_status():
         status = await get_budget_usage(db)
         return status
 
+async def init_db():
+    """Initialize database connection"""
+    from models import init_db as _init_db
+    await _init_db()
+
+def main():
+    port = int(os.getenv("PORT", "3000"))
+    asyncio.run(init_db())
+    mcp.run(transport="sse", host="0.0.0.0", port=port)
+
 if __name__ == "__main__":
-    mcp.run()
+    main()
