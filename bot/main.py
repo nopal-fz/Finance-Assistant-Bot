@@ -11,7 +11,7 @@ from services.transaction import create_transaction, get_summary, delete_transac
 from services.budget import set_budget, get_budget_usage
 from services.category import list_categories, add_category, delete_category
 from services.helpers import format_idr
-from models import AsyncSessionLocal
+from models import AsyncSessionLocal, init_db
 from datetime import datetime, timedelta
 import calendar
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
