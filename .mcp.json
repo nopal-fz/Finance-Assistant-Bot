@@ -1,39 +1,9 @@
 {
   "mcpServers": {
     "bot-kas-pribadi": {
-      "command": "python",
-      "args": ["mcp/server.py"],
-      "cwd": "C:/Bot Expenses",
-      "type": "stdio",
-      "description": "MCP Server untuk Bot Kas Pribadi. Mengekspos 3 tools: get_transactions, get_summary, get_budget_status",
-      "tools": [
-        {
-          "name": "get_transactions",
-          "description": "Mengambil daftar transaksi dari database. Period: 'hari ini' / 'minggu ini' / 'bulan ini' / 'tahun ini' / 'YYYY-MM-DD..YYYY-MM-DD'. Category: opsional filter.",
-          "inputs": {
-            "period": {"type": "string", "default": "bulan ini"},
-            "category": {"type": "string", "required": false}
-          }
-        },
-        {
-          "name": "get_summary",
-          "description": "Ringkasan periode: total income, total expense, selisih, breakdown per kategori.",
-          "inputs": {
-            "period": {"type": "string", "default": "bulan ini"}
-          }
-        },
-        {
-          "name": "get_budget_status",
-          "description": "Cek status pengeluaran terhadap limit budget yang di-set user. Kalau category tidak diberikan, mengembalikan semua kategori.",
-          "inputs": {
-            "category": {"type": "string", "required": false}
-          }
-        }
-      ],
-      "env": {
-        "DATABASE_URL": "sqlite+aiosqlite:///C:/Bot Expenses/bot_kemas.db",
-        "TZ": "Asia/Jakarta"
-      }
+      "command": "C:\\Bot Expenses\\.venv\\Scripts\\python.exe",
+      "args": ["C:\\Bot Expenses\\mcp\\server.py"],
+      "cwd": "C:/Bot Expenses"
     }
   }
 }

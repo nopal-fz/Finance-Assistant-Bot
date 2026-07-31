@@ -1,3 +1,7 @@
+import sys
+from pathlib import Path
+sys.path.append(str(Path(__file__).parent.parent))
+
 from fastmcp import FastMCP
 from models import AsyncSessionLocal, Transaction
 from services.transaction import get_filtered_transactions, get_summary as get_tx_summary
