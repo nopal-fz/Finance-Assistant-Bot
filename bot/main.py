@@ -400,6 +400,7 @@ async def main():
         app.add_error_handler(error_handler)
 
         await app.initialize()
+        await init_db()
         await app.start()
         await app.updater.start_polling()
 

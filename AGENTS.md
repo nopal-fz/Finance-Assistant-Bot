@@ -27,6 +27,8 @@
 - [x] Implementasi dashboard frontend sederhana (FastAPI + Chart.js, layout asimetris).
 - [x] Implementasi LLM untuk sapaan ramah (Groq Llama-3.3-70b).
 - [x] Testing & Validation (unit test service layer & manual bot testing).
+- [x] Railway deployment prep (FastMCP SSE, asyncpg, init_db fix, three services via Procfile)
+- [x] Push to production-ready repo (remotes: origin = https://github.com/nopal-fz/Finance-Assistant-Bot.git)
 
 ## 🚀 Last Session Notes
 - *Status:* MVP feature-complete sesuai PRD + LLM sapaan ramah. Bot commands: `/start`, `/help`, `/laporan`, `/budget`, `/catat`, `/hapus`, `/batal`, `/kategori`. Category override via chat. Scheduler: laporan mingguan (Senin 09:00), laporan bulanan (tgl 1 09:00), reminder budget (Senin 10:00). Dashboard FastAPI + Chart.js + dark mode + auth middleware + layout grid 2:1:1 asimetris. MCP server 3 tools. Git init & push ke GitHub. Semua akses data via services layer. Pydantic schemas selesai. Error handler bot aktif. Auth middleware terpasang di semua endpoint API + dashboard. `load_dotenv()` pake absolute path biar aman dari CWD issue. `.env.example` tersedia. README lengkap dengan tabel kategori, cara override, budget threshold, dan deployment guide. Fungsi `main()` bot direfactor agar bisa di-import.
