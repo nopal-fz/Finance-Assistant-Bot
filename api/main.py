@@ -14,6 +14,11 @@ load_dotenv(os.path.join(_project_root, ".env"))
 
 app = FastAPI()
 
+@app.on_event("startup")
+async def startup():
+    from models import init_db
+    await init_db()
+
 async def get_db_session():
     async with AsyncSessionLocal() as session:
         yield session
