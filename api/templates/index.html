@@ -77,6 +77,48 @@
         .theme-toggle:hover {
             border-color: var(--text-secondary);
         }
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+        }
+        .period-select {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 0.5rem 0.75rem;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: var(--text);
+            cursor: pointer;
+        }
+        .month-picker {
+            display: none;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .month-picker.show { display: flex; }
+        .month-picker select,
+        .date-picker input {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 0.5rem 0.75rem;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: var(--text);
+            cursor: pointer;
+        }
+        .date-picker {
+            display: none;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .date-picker.show { display: flex; }
+        .loading { opacity: 0.5; pointer-events: none; transition: opacity 0.2s; }
         .summary-stats {
             display: flex;
             gap: 1rem;
@@ -195,7 +237,25 @@
                 <h1>Dashboard Keuangan</h1>
                 <p class="subtitle">Ringkasan pemasukan & pengeluaran <span id="periodLabel">bulan ini</span></p>
             </div>
-            <button class="theme-toggle" onclick="toggleTheme()" id="themeBtn">&#9790; Dark Mode</button>
+            <div class="header-right">
+                <div class="month-picker" id="monthPicker">
+                    <select id="monthSelect"></select>
+                    <select id="yearSelect"></select>
+                </div>
+                <div class="date-picker" id="datePicker">
+                    <input type="date" id="startDate">
+                    <span class="period-select" style="cursor:default;border:none;">s.d.</span>
+                    <input type="date" id="endDate">
+                </div>
+                <select class="period-select" id="periodSelect" onchange="onPeriodChange()">
+                    <option value="hari ini">Hari Ini</option>
+                    <option value="minggu ini">Minggu Ini</option>
+                    <option value="bulan ini" selected>Bulan Ini</option>
+                    <option value="custom">Pilih Bulan...</option>
+                    <option value="range">Rentang Tanggal</option>
+                </select>
+                <button class="theme-toggle" onclick="toggleTheme()" id="themeBtn">&#9790; Dark Mode</button>
+            </div>
         </div>
         <div class="summary-stats" id="statsBar">
             <div class="stat-card"><div class="stat-label">Pemasukan</div><div class="stat-value income" id="incomeVal">-</div></div>
@@ -220,6 +280,14 @@
 
     <script>
         const TOKEN = new URLSearchParams(window.location.search).get('token') || '';
+        const MONTHS_ID = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
+        let summaryChart = null;
+        let pieChart = null;
+        let currentPeriod = 'bulan ini';
+        let currentYear = new Date().getFullYear();
+        let currentMonth = new Date().getMonth() + 1;
+        let currentStartDate = '';
+        let currentEndDate = '';
 
         function toggleTheme() {
             const html = document.documentElement;
@@ -232,6 +300,84 @@
         if (localStorage.getItem('theme') === 'dark') { document.documentElement.classList.add('dark');
             document.getElementById('themeBtn').innerHTML = '\u2600 Light Mode'; }
 
+        function buildMonthPicker() {
+            const mSel = document.getElementById('monthSelect');
+            const ySel = document.getElementById('yearSelect');
+            const now = new Date();
+            mSel.innerHTML = '';
+            for (let i = 1; i <= 12; i++) {
+                const opt = document.createElement('option');
+                opt.value = i;
+                opt.textContent = MONTHS_ID[i - 1];
+                if (i === now.getMonth() + 1) opt.selected = true;
+                mSel.appendChild(opt);
+            }
+            ySel.innerHTML = '';
+            for (let y = now.getFullYear(); y >= now.getFullYear() - 5; y--) {
+                const opt = document.createElement('option');
+                opt.value = y;
+                opt.textContent = y;
+                if (y === now.getFullYear()) opt.selected = true;
+                ySel.appendChild(opt);
+            }
+            currentMonth = now.getMonth() + 1;
+            currentYear = now.getFullYear();
+            const firstDay = new Date(now.getFullYear(), now.getMonth(), 1);
+            const lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+            currentStartDate = firstDay.toISOString().slice(0, 10);
+            currentEndDate = lastDay.toISOString().slice(0, 10);
+            document.getElementById('startDate').value = currentStartDate;
+            document.getElementById('endDate').value = currentEndDate;
+        }
+
+        function onPeriodChange() {
+            const sel = document.getElementById('periodSelect');
+            const monthPicker = document.getElementById('monthPicker');
+            const datePicker = document.getElementById('datePicker');
+            currentPeriod = sel.value;
+            monthPicker.classList.toggle('show', currentPeriod === 'custom');
+            datePicker.classList.toggle('show', currentPeriod === 'range');
+            if (currentPeriod === 'custom') {
+                currentMonth = parseInt(document.getElementById('monthSelect').value, 10);
+                currentYear = parseInt(document.getElementById('yearSelect').value, 10);
+            }
+            if (currentPeriod === 'range') {
+                currentStartDate = document.getElementById('startDate').value;
+                currentEndDate = document.getElementById('endDate').value;
+            }
+            reloadAll();
+        }
+
+        document.getElementById('monthSelect').addEventListener('change', () => {
+            if (currentPeriod === 'custom') { currentMonth = parseInt(document.getElementById('monthSelect').value, 10); reloadAll(); }
+        });
+        document.getElementById('yearSelect').addEventListener('change', () => {
+            if (currentPeriod === 'custom') { currentYear = parseInt(document.getElementById('yearSelect').value, 10); reloadAll(); }
+        });
+        document.getElementById('startDate').addEventListener('change', () => {
+            if (currentPeriod === 'range') { currentStartDate = document.getElementById('startDate').value; reloadAll(); }
+        });
+        document.getElementById('endDate').addEventListener('change', () => {
+            if (currentPeriod === 'range') { currentEndDate = document.getElementById('endDate').value; reloadAll(); }
+        });
+
+        function periodLabel() {
+            if (currentPeriod === 'hari ini') return 'hari ini';
+            if (currentPeriod === 'minggu ini') return 'minggu ini';
+            if (currentPeriod === 'custom') return MONTHS_ID[currentMonth - 1] + ' ' + currentYear;
+            if (currentPeriod === 'range' && currentStartDate && currentEndDate) {
+                return currentStartDate.split('-').reverse().join('-') + ' s.d. ' + currentEndDate.split('-').reverse().join('-');
+            }
+            return 'bulan ini';
+        }
+
+        function buildQuery() {
+            let q = 'periode=' + encodeURIComponent(currentPeriod);
+            if (currentPeriod === 'custom') q += '&tahun=' + currentYear + '&bulan=' + currentMonth;
+            if (currentPeriod === 'range') q += '&start_date=' + currentStartDate + '&end_date=' + currentEndDate;
+            return q;
+        }
+
         async function fetchData(endpoint) {
             const sep = endpoint.includes('?') ? '&' : '?';
             const res = await fetch(endpoint + sep + 'token=' + TOKEN);
@@ -243,12 +389,30 @@
             return 'Rp ' + Number(n).toLocaleString('id-ID');
         }
 
+        function setLoading(on) {
+            document.querySelector('.container').classList.toggle('loading', on);
+        }
+
+        async function reloadAll() {
+            setLoading(true);
+            document.getElementById('periodLabel').textContent = periodLabel();
+            document.querySelectorAll('.card-badge').forEach(b => b.textContent = periodLabel());
+            try {
+                await Promise.all([loadSummary(), loadPie(), loadTxs()]);
+            } catch (e) {
+                console.error(e);
+            } finally {
+                setLoading(false);
+            }
+        }
+
         async function loadSummary() {
-            const data = await fetchData('/api/summary?periode=bulan ini');
+            const data = await fetchData('/api/summary?' + buildQuery());
             document.getElementById('incomeVal').textContent = formatRupiah(data.total_income);
             document.getElementById('expenseVal').textContent = formatRupiah(data.total_expense);
             document.getElementById('netVal').textContent = formatRupiah(data.total_income - data.total_expense);
-            new Chart(document.getElementById('summaryChart'), {
+            if (summaryChart) summaryChart.destroy();
+            summaryChart = new Chart(document.getElementById('summaryChart'), {
                 type: 'bar',
                 data: {
                     labels: ['Pemasukan', 'Pengeluaran'],
@@ -266,11 +430,25 @@
         }
 
         async function loadPie() {
-            const data = await fetchData('/api/summary?periode=bulan ini');
+            const data = await fetchData('/api/summary?' + buildQuery());
             const labels = Object.keys(data.by_category);
             const values = Object.values(data.by_category);
-            if (labels.length === 0) { document.getElementById('pieChart').parentElement.innerHTML += '<div class="empty-state">Belum ada data pengeluaran.</div>'; return; }
-            new Chart(document.getElementById('pieChart'), {
+            const chartContainer = document.getElementById('pieChart').parentElement;
+            let emptyEl = chartContainer.querySelector('.empty-state');
+            if (labels.length === 0) {
+                if (pieChart) { pieChart.destroy(); pieChart = null; }
+                if (!emptyEl) {
+                    emptyEl = document.createElement('div');
+                    emptyEl.className = 'empty-state';
+                    emptyEl.textContent = 'Belum ada data pengeluaran.';
+                    chartContainer.appendChild(emptyEl);
+                }
+                return;
+            } else if (emptyEl) {
+                emptyEl.remove();
+            }
+            if (pieChart) pieChart.destroy();
+            pieChart = new Chart(document.getElementById('pieChart'), {
                 type: 'doughnut',
                 data: {
                     labels,
@@ -287,8 +465,9 @@
 
         async function loadTxs() {
             const list = document.getElementById('latestTxs');
-            const data = await fetchData('/api/transactions?periode=minggu ini');
-            if (data.length === 0) { list.innerHTML = '<li class="empty-state">Belum ada transaksi minggu ini.</li>'; return; }
+            list.innerHTML = '';
+            const data = await fetchData('/api/transactions?' + buildQuery());
+            if (data.length === 0) { list.innerHTML = '<li class="empty-state">Belum ada transaksi di periode ini.</li>'; return; }
             data.slice(0, 10).forEach(tx => {
                 const li = document.createElement('li');
                 const date = new Date(tx.waktu).toLocaleDateString('id-ID', { weekday: 'short', day: 'numeric' });
@@ -297,7 +476,7 @@
             });
         }
 
-        window.onload = () => { loadSummary(); loadPie(); loadTxs(); };
+        window.onload = () => { buildMonthPicker(); reloadAll(); };
     </script>
 </body>
 </html>

@@ -34,22 +34,49 @@ def get_password_header(request: Request):
         raise HTTPException(status_code=401, detail="Unauthorized. Pass ?token=xxx or Authorization header.")
     return token
 
-@app.get("/api/transactions")
-async def get_transactions(request: Request, db: AsyncSession = Depends(get_db_session), _auth: str = Depends(get_password_header)):
-    # Filter opsional: periode hari ini/minggu/bulan ini
-    period = request.query_params.get("periode", "bulan ini")
+def parse_period(periode: str, tahun: int = None, bulan: int = None, start_date: str = None, end_date: str = None):
     now = datetime.now()
-    if period == "hari ini":
+    if periode == "hari ini":
         start = now.replace(hour=0, minute=0, second=0, microsecond=0)
         end = now.replace(hour=23, minute=59, second=59, microsecond=999999)
-    elif period == "minggu ini":
+    elif periode == "minggu ini":
         start = now - timedelta(days=now.weekday())
         start = start.replace(hour=0, minute=0, second=0, microsecond=0)
         end = now.replace(hour=23, minute=59, second=59, microsecond=999999)
-    else:  # bulan ini
+    elif periode == "range" and start_date and end_date:
+        try:
+            sd = datetime.strptime(start_date, "%Y-%m-%d")
+            ed = datetime.strptime(end_date, "%Y-%m-%d")
+            if sd > ed:
+                sd, ed = ed, sd
+            start = sd.replace(hour=0, minute=0, second=0, microsecond=0)
+            end = ed.replace(hour=23, minute=59, second=59, microsecond=999999)
+        except ValueError:
+            start = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+            last_day = calendar.monthrange(now.year, now.month)[1]
+            end = now.replace(day=last_day, hour=23, minute=59, second=59, microsecond=999999)
+    elif periode == "custom" and tahun and bulan and 1 <= bulan <= 12 and 1900 <= tahun <= 2100:
+        start = datetime(tahun, bulan, 1, 0, 0, 0, 0)
+        last_day = calendar.monthrange(tahun, bulan)[1]
+        end = datetime(tahun, bulan, last_day, 23, 59, 59, 999999)
+    else:  # bulan ini atau fallback
         start = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
         last_day = calendar.monthrange(now.year, now.month)[1]
         end = now.replace(day=last_day, hour=23, minute=59, second=59, microsecond=999999)
+    return start, end
+
+@app.get("/api/transactions")
+async def get_transactions(request: Request, db: AsyncSession = Depends(get_db_session), _auth: str = Depends(get_password_header)):
+    period = request.query_params.get("periode", "bulan ini")
+    tahun = request.query_params.get("tahun")
+    bulan = request.query_params.get("bulan")
+    start_date = request.query_params.get("start_date")
+    end_date = request.query_params.get("end_date")
+    
+    tahun_int = int(tahun) if tahun and tahun.isdigit() else None
+    bulan_int = int(bulan) if bulan and bulan.isdigit() else None
+    
+    start, end = parse_period(period, tahun_int, bulan_int, start_date, end_date)
 
     stmt = select(Transaction).where(
         Transaction.timestamp >= start,
@@ -74,18 +101,15 @@ async def get_transactions(request: Request, db: AsyncSession = Depends(get_db_s
 @app.get("/api/summary")
 async def get_summary(request: Request, db: AsyncSession = Depends(get_db_session), _auth: str = Depends(get_password_header)):
     period = request.query_params.get("periode", "bulan ini")
-    now = datetime.now()
-    if period == "hari ini":
-        start = now.replace(hour=0, minute=0, second=0, microsecond=0)
-        end = now.replace(hour=23, minute=59, second=59, microsecond=999999)
-    elif period == "minggu ini":
-        start = now - timedelta(days=now.weekday())
-        start = start.replace(hour=0, minute=0, second=0, microsecond=0)
-        end = now.replace(hour=23, minute=59, second=59, microsecond=999999)
-    else:
-        start = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
-        last_day = calendar.monthrange(now.year, now.month)[1]
-        end = now.replace(day=last_day, hour=23, minute=59, second=59, microsecond=999999)
+    tahun = request.query_params.get("tahun")
+    bulan = request.query_params.get("bulan")
+    start_date = request.query_params.get("start_date")
+    end_date = request.query_params.get("end_date")
+    
+    tahun_int = int(tahun) if tahun and tahun.isdigit() else None
+    bulan_int = int(bulan) if bulan and bulan.isdigit() else None
+    
+    start, end = parse_period(period, tahun_int, bulan_int, start_date, end_date)
 
     stmt_income = select(func.sum(Transaction.nominal)).where(
         Transaction.jenis == TransactionType.INCOME,
