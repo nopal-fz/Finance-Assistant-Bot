@@ -1,5 +1,7 @@
 from fastapi import FastAPI, Request, Depends, HTTPException
 from fastapi.responses import HTMLResponse, Response
+import csv
+import io
 from models import AsyncSessionLocal, Transaction, TransactionType
 from models.base import AsyncSession
 from sqlalchemy import select, func
@@ -146,6 +148,47 @@ async def get_dashboard(request: Request, _auth: str = Depends(get_password_head
     async with aiofiles.open(os.path.join(_project_root, "api", "templates", "index.html"), encoding="utf-8") as f:
         html = await f.read()
     return HTMLResponse(html)
+
+@app.get("/api/export")
+async def export_csv(request: Request, db: AsyncSession = Depends(get_db_session), _auth: str = Depends(get_password_header)):
+    period = request.query_params.get("periode", "bulan ini")
+    tahun = request.query_params.get("tahun")
+    bulan = request.query_params.get("bulan")
+    start_date = request.query_params.get("start_date")
+    end_date = request.query_params.get("end_date")
+
+    tahun_int = int(tahun) if tahun and tahun.isdigit() else None
+    bulan_int = int(bulan) if bulan and bulan.isdigit() else None
+
+    start, end = parse_period(period, tahun_int, bulan_int, start_date, end_date)
+
+    stmt = select(Transaction).where(
+        Transaction.timestamp >= start,
+        Transaction.timestamp <= end,
+        Transaction.is_confirmed == 1
+    ).order_by(Transaction.timestamp.asc())
+    res = await db.execute(stmt)
+    txs = res.scalars().all()
+
+    buf = io.StringIO()
+    writer = csv.writer(buf)
+    writer.writerow(["Tanggal", "Jenis", "Kategori", "Deskripsi", "Nominal", "ID"])
+    for t in txs:
+        writer.writerow([
+            t.timestamp.strftime("%Y-%m-%d %H:%M:%S"),
+            t.jenis.value,
+            t.kategori,
+            t.deskripsi or "",
+            t.nominal,
+            t.id,
+        ])
+
+    filename = f"transactions_{start.strftime('%Y%m%d')}_{end.strftime('%Y%m%d')}.csv"
+    return Response(
+        content=buf.getvalue(),
+        media_type="text/csv; charset=utf-8",
+        headers={"Content-Disposition": f'attachment; filename="{filename}"'}
+    )
 
 @app.get("/api/budget")
 async def budget_status(request: Request, db: AsyncSession = Depends(get_db_session), _auth: str = Depends(get_password_header)):

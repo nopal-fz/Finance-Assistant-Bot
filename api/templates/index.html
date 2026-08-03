@@ -195,7 +195,12 @@
             display: flex;
             flex-direction: column;
             gap: 0.375rem;
+            max-height: 260px;
+            overflow-y: auto;
+            padding-right: 0.25rem;
         }
+        .latest-list::-webkit-scrollbar { width: 6px; }
+        .latest-list::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
         .latest-list li {
             padding: 0.5rem 0;
             border-bottom: 1px solid var(--border);
@@ -254,6 +259,7 @@
                     <option value="custom">Pilih Bulan...</option>
                     <option value="range">Rentang Tanggal</option>
                 </select>
+                <button class="theme-toggle" onclick="exportCsv()" id="exportBtn">&#8681; Export CSV</button>
                 <button class="theme-toggle" onclick="toggleTheme()" id="themeBtn">&#9790; Dark Mode</button>
             </div>
         </div>
@@ -378,6 +384,11 @@
             return q;
         }
 
+        function exportCsv() {
+            const sep = buildQuery().includes('?') ? '&' : '?';
+            window.location.href = '/api/export' + sep + buildQuery() + '&token=' + TOKEN;
+        }
+
         async function fetchData(endpoint) {
             const sep = endpoint.includes('?') ? '&' : '?';
             const res = await fetch(endpoint + sep + 'token=' + TOKEN);
@@ -468,7 +479,7 @@
             list.innerHTML = '';
             const data = await fetchData('/api/transactions?' + buildQuery());
             if (data.length === 0) { list.innerHTML = '<li class="empty-state">Belum ada transaksi di periode ini.</li>'; return; }
-            data.slice(0, 10).forEach(tx => {
+            data.forEach(tx => {
                 const li = document.createElement('li');
                 const date = new Date(tx.waktu).toLocaleDateString('id-ID', { weekday: 'short', day: 'numeric' });
                 li.innerHTML = `<span><span class="tx-cat">${tx.kategori}</span><span class="tx-date">${date}</span></span><span class="tx-amount">${formatRupiah(tx.nominal)}</span>`;
