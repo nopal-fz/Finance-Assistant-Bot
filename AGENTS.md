@@ -30,9 +30,11 @@
 - [x] Railway deployment prep (FastMCP SSE, asyncpg, init_db fix, three services via Procfile)
 - [x] Railway deployment LIVE (web/worker/mcp + PostgreSQL tersambung ke semua service)
 - [x] Push to production-ready repo (remotes: origin = https://github.com/nopal-fz/Finance-Assistant-Bot.git)
+- [x] Fitur export CSV (`GET /api/export`, stdlib csv, kolom Tanggal/Jenis/Kategori/Deskripsi/Nominal/ID) + tombol Export di dashboard
+- [x] Dashboard transaksi terbaru jadi scrollable (max-height + overflow-y, render semua data periode, hapus slice 10)
 
 ## 🚀 Last Session Notes
 - *Status:* Production LIVE di Railway dengan 3 service dari `Procfile` — `web` (dashboard FastAPI + Chart.js + auth token), `worker` (bot Telegram polling + APScheduler), `mcp` (FastMCP SSE di `/sse`). PostgreSQL tersambung ke semua service. Dashboard: `https://<domain-web>/?token=<DASHBOARD_PASSWORD>`. MCP: `https://<domain-mcp>/sse` (Cursor/Claude pakai type `sse`). Bot commands: `/start`, `/help`, `/laporan`, `/budget`, `/catat`, `/hapus`, `/batal`, `/kategori`. Category override via chat. Scheduler: laporan mingguan (Senin 09:00), laporan bulanan (tgl 1 09:00), reminder budget (Senin 10:00). Semua akses data via services layer. Pydantic schemas selesai. Error handler bot aktif. Auth middleware di semua endpoint API + dashboard.
 - *Gotchas deployment:* (1) PostgreSQL WAJIB di-Add Reference ke semua service (`web`/`worker`/`mcp`) via Variables, kalau tidak service fallback ke SQLite kosong → `no such table: transactions`. (2) `init_db()` dipanggil di startup bot (`bot/main.py`) dan startup event web (`api/main.py`) — bikin tabel otomatis. (3) `models/base.py` transform `postgresql://` → `postgresql+asyncpg://` biar SQLAlchemy async bisa connect. (4) MCP URL wajib pakai `/sse`, root `/` ga dipakai. (5) `.railwayignore` skip `.venv`, `.env`, `*.db`. (6) `.mcp.json` lokal portable (relatif), untuk Cursor remote pakai config SSE terpisah.
 - *Repo:* `https://github.com/nopal-fz/Finance-Assistant-Bot`
-- *What's Next:* Fitur baru (export CSV, recurring transactions, search), improve NLP (deteksi utang/piutang/transfer), atau testing lebih proper (unit test bot handler & API endpoints).
+- *What's Next:* Fitur baru (recurring transactions, search), improve NLP (deteksi utang/piutang/transfer), atau testing lebih proper (unit test bot handler & API endpoints). Export CSV (`GET /api/export`) + dashboard scrollable sudah selesai (commit `af724c3`).
