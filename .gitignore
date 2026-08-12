@@ -29,3 +29,8 @@ uvicorn.log
 # Telegram
 bot.session
 bot_kemas.db
+
+# Md
+*.md
+!README.md
+!readme.md
